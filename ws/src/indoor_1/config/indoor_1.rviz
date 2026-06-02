@@ -1,0 +1,47 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /RobotModel1
+        - /TF1
+      Splitter Ratio: 0.5
+Views:
+  Current:
+    Class: rviz_default_plugins/Orbit
+    Distance: 3
+    Focal Point:
+      X: 0
+      Y: 0
+      Z: 0
+    Name: Current View
+    Pitch: 0.5
+    Yaw: 0.5
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Fixed Frame: base_footprint
+    Frame Rate: 30
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Enabled: true
+      Name: Grid
+      Reference Frame: base_footprint
+      Plane Cell Count: 20
+      Plane Size: 10
+    - Class: rviz_default_plugins/RobotModel
+      Enabled: true
+      Name: RobotModel
+      Description Source: Topic
+      Robot Description Topic: robot_description
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Name: TF
+  Enabled: true
+  Name: root
+Window Geometry:
+  Height: 900
+  Width: 1600
+  X: 50
+  Y: 50

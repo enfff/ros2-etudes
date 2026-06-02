@@ -8,6 +8,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     pkg_share = get_package_share_directory('indoor_1')
     urdf_file = os.path.join(pkg_share, 'urdf', 'robot.urdf')
+    rviz_config_file = os.path.join(pkg_share, 'config', 'indoor_1.rviz')
     world_file = os.path.join(
         get_package_share_directory('nav2_minimal_tb4_sim'),
         'worlds',
@@ -41,8 +42,17 @@ def generate_launch_description():
         output='screen'
     )
 
+    rviz = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', rviz_config_file]
+    )
+
     return LaunchDescription([
         robot_state_publisher,
         gazebo,
-        spawn_robot
+        spawn_robot,
+        rviz,
     ])
