@@ -1,0 +1,24 @@
+# ROS 2 Workspace
+/ws/build/
+/ws/install/
+/ws/log/
+
+# ROS 2 / colcon generated metadata
+/ws/compile_commands.json
+/ws/.colcon/
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*~
