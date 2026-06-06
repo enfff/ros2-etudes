@@ -22,3 +22,7 @@ htmlcov/
 .DS_Store
 *.swp
 *~
+
+# Temp repos
+turtlebot3*
+DynamixelSDK
