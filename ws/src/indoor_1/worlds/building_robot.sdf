@@ -18,6 +18,10 @@
             name="gz::sim::systems::SceneBroadcaster">
         </plugin>
 
+        <plugin filename="gz-sim-imu-system"
+            name="gz::sim::systems::Imu">
+        </plugin>
+
         <!-- Up -->
         <plugin filename="gz-sim-triggered-publisher-system"
             name="gz::sim::systems::TriggeredPublisher">
@@ -25,7 +29,7 @@
                 <match field="data">16777235</match>
             </input>
             <output type="gz.msgs.Twist" topic="/cmd_vel">
-                linear: {x: 2}, angular: {z: 0.0}
+                linear: {x: 2.0}, angular: {z: 0.0}
             </output>
         </plugin>
 
@@ -36,7 +40,7 @@
                 <match field="data">16777237</match>
             </input>
             <output type="gz.msgs.Twist" topic="/cmd_vel">
-                linear: {x: -1}, angular: {z: 0.0}
+                linear: {x: -1.0}, angular: {z: 0.0}
             </output>
         </plugin>
 
@@ -47,7 +51,7 @@
                 <match field="data">16777236</match>
             </input>
             <output type="gz.msgs.Twist" topic="/cmd_vel">
-                linear: {x: -1}, angular: {z: 0.5}
+                linear: {x: 0.0}, angular: {z: -0.5}
             </output>
         </plugin>
 
@@ -58,7 +62,7 @@
                 <match field="data">16777234</match>
             </input>
             <output type="gz.msgs.Twist" topic="/cmd_vel">
-                linear: {x: 0}, angular: {z: 0.5}
+                linear: {x: 0.0}, angular: {z: 0.5}
             </output>
         </plugin>
 
@@ -101,6 +105,7 @@
                 </visual>
             </link>
         </model>
+
         <model name='example_robot' canonical_link='chassis'>
             <plugin
                 filename="gz-sim-diff-drive-system"
@@ -114,6 +119,7 @@
             </plugin>
 
             <pose relative_to='world'>0 0 0 0 0 0</pose>
+
             <link name='chassis'>
                 <pose relative_to='__model__'>0.5 0 0.4 0 0 0</pose>
                 <inertial>
@@ -127,6 +133,12 @@
                         <izz>0.476646</izz>
                     </inertia>
                 </inertial>
+                <sensor name="imu_sensor" type="imu">
+                    <always_on>1</always_on>
+                    <update_rate>1</update_rate>
+                    <visualize>true</visualize>
+                    <topic>imu</topic>
+                </sensor>
                 <visual name='visual'>
                     <geometry>
                         <box>
