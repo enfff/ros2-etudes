@@ -26,3 +26,7 @@ htmlcov/
 # Temp repos
 turtlebot3*
 DynamixelSDK
+
+media/
+*.pdf
+*Harmonic*

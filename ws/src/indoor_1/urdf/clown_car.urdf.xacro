@@ -1,12 +1,29 @@
 <?xml version="1.0"?>
-<robot name="clown_car">
+<robot name="clown_car" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Define robot constants -->
+    <xacro:property name="base_width" value="1.0" />
+    <xacro:property name="base_length" value="2.0" />
+    <xacro:property name="base_height" value="0.5" />
+
+    <xacro:property name="wheel_radius" value="0.4" />
+    <xacro:property name="wheel_width" value="0.2" />
+    <xacro:property name="wheel_ygap" value="1.2" />
+    <xacro:property name="wheel_zoff" value="0.0" />
+    <xacro:property name="wheel_xoff" value="-0.5" />
+
+    <xacro:property name="caster_xoff" value="0.8" />
+    <xacro:property name="caster_zoff" value="-0.2" />
+    <xacro:property name="imu_zoff" value="0.15" />
+    <xacro:property name="lidar_zoff" value="0.25" />
+    <xacro:property name="chassis_zoff" value="0.4" />
 
     <link name="base_footprint" />
 
     <joint name="base_footprint_to_chassis_joint" type="fixed">
         <parent link="base_footprint" />
         <child link="chassis" />
-        <origin xyz="0 0 0.4" rpy="0 0 0" />
+        <origin xyz="0 0 ${chassis_zoff}" rpy="0 0 0" />
     </joint>
 
 
@@ -19,13 +36,13 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <box size="2.0 1.0 0.5" />
+                <box size="${base_length} ${base_width} ${base_height}" />
             </geometry>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <box size="2.0 1.0 0.5" />
+                <box size="${base_length} ${base_width} ${base_height}" />
             </geometry>
         </collision>
     </link>
@@ -35,7 +52,7 @@
     <joint name="imu_joint" type="fixed">
         <parent link="chassis" />
         <child link="imu_link" />
-        <origin xyz="0 0 0.15" rpy="0 0 0" />
+        <origin xyz="0 0 ${imu_zoff}" rpy="0 0 0" />
     </joint>
 
     <link name="lidar_link" />
@@ -43,7 +60,7 @@
     <joint name="lidar_joint" type="fixed">
         <parent link="chassis" />
         <child link="lidar_link" />
-        <origin xyz="0 0 0.25" rpy="0 0 0" />
+        <origin xyz="0 0 ${lidar_zoff}" rpy="0 0 0" />
     </joint>
 
     <gazebo reference="imu_link">
@@ -100,19 +117,19 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <cylinder radius="0.4" length="0.2" />
+                <cylinder radius="${wheel_radius}" length="${wheel_width}" />
             </geometry>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <cylinder radius="0.4" length="0.2" />
+                <cylinder radius="${wheel_radius}" length="${wheel_width}" />
             </geometry>
         </collision>
     </link>
 
     <joint name="left_wheel_joint" type="continuous">
-        <origin xyz="-0.5 0.6 0" rpy="-1.5707 0 0" />
+        <origin xyz="${wheel_xoff} ${wheel_ygap / 2.0} ${wheel_zoff}" rpy="-1.5707 0 0" />
         <parent link="chassis" />
         <child link="left_wheel" />
         <axis xyz="0 0 1" />
@@ -132,19 +149,19 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <cylinder radius="0.4" length="0.2" />
+                <cylinder radius="${wheel_radius}" length="${wheel_width}" />
             </geometry>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <cylinder radius="0.4" length="0.2" />
+                <cylinder radius="${wheel_radius}" length="${wheel_width}" />
             </geometry>
         </collision>
     </link>
 
     <joint name="right_wheel_joint" type="continuous">
-        <origin xyz="-0.5 -0.6 0" rpy="-1.5707 0 0" />
+        <origin xyz="${wheel_xoff} ${-wheel_ygap / 2.0} ${wheel_zoff}" rpy="-1.5707 0 0" />
         <parent link="chassis" />
         <child link="right_wheel" />
         <axis xyz="0 0 1" />
@@ -176,7 +193,7 @@
     </link>
 
     <joint name="caster_wheel" type="continuous">
-        <origin xyz="0.8 0 -0.2" rpy="0 0 0" />
+        <origin xyz="${caster_xoff} 0 ${caster_zoff}" rpy="0 0 0" />
         <parent link="chassis" />
         <child link="caster" />
         <axis xyz="1 1 1" />
@@ -195,14 +212,14 @@
             name="gz::sim::systems::DiffDrive">
             <left_joint>left_wheel_joint</left_joint>
             <right_joint>right_wheel_joint</right_joint>
-            <wheel_separation>1.2</wheel_separation>
-            <wheel_radius>0.4</wheel_radius>
+            <wheel_separation>${wheel_ygap}</wheel_separation>
+            <wheel_radius>${wheel_radius}</wheel_radius>
             <odom_publish_frequency>1</odom_publish_frequency>
             <topic>cmd_vel</topic>
 
             <frame_id>odom</frame_id>
             <child_frame_id>base_footprint</child_frame_id>
-            
+
         </plugin>
     </gazebo>
 

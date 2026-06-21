@@ -1,21 +1,25 @@
 import os
+import tempfile
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+import xacro
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('indoor_1')
-    urdf_file = os.path.join(pkg_share, 'urdf', 'clown_car.urdf')
+    xacro_file = os.path.join(pkg_share, 'urdf', 'clown_car.urdf.xacro')
     rviz_config_file = os.path.join(pkg_share, 'config', 'indoor_1.rviz')
     world_file = os.path.join(pkg_share, 'worlds', 'test_world.sdf')
+
     nav2_params_file = os.path.join(
         get_package_share_directory('nav2_bringup'),
         'params',
         'nav2_params.yaml',
     )
+    
     lidar_scan_topic = '/world/test_world/model/clown_car/link/base_footprint/sensor/gpu_lidar/scan'
     lidar_points_topic = '/world/test_world/model/clown_car/link/base_footprint/sensor/gpu_lidar/scan/points'
     odom_topic = '/model/clown_car/odometry'
@@ -25,8 +29,12 @@ def generate_launch_description():
         'gz_sim.launch.py'
     )
 
-    with open(urdf_file, 'r') as infp:
-        robot_desc = infp.read()
+    robot_desc = xacro.process_file(xacro_file).toxml()
+    urdf_temp = tempfile.NamedTemporaryFile(mode='w', suffix='.urdf', delete=False)
+    urdf_temp.write(robot_desc)
+    urdf_temp.flush()
+    urdf_file = urdf_temp.name
+    urdf_temp.close()
         
     robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -34,6 +42,19 @@ def generate_launch_description():
         output='screen',
         parameters=[{'robot_description': robot_desc}]
     )
+
+    # joint_state_publisher_node = Node(
+    #     package='joint_state_publisher',
+    #     executable='joint_state_publisher',
+    #     name='joint_state_publisher',
+    #     parameters=[{'robot_description': robot_desc}]
+    # )
+
+    # joint_state_publisher_gui_node = Node(
+    #     package='joint_state_publisher_gui',
+    #     executable='joint_state_publisher_gui',
+    #     name='joint_state_publisher_gui'
+    # )
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(gazebo_launch),
