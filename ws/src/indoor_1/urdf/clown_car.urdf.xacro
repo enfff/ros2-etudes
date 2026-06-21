@@ -16,18 +16,17 @@
     <xacro:property name="caster_zoff" value="-0.2" />
     <xacro:property name="imu_zoff" value="0.15" />
     <xacro:property name="lidar_zoff" value="0.25" />
-    <xacro:property name="chassis_zoff" value="0.4" />
+    <xacro:property name="base_link_zoff" value="0.4" />
 
     <link name="base_footprint" />
 
-    <joint name="base_footprint_to_chassis_joint" type="fixed">
+    <joint name="base_footprint_joint" type="fixed">
         <parent link="base_footprint" />
-        <child link="chassis" />
-        <origin xyz="0 0 ${chassis_zoff}" rpy="0 0 0" />
+        <child link="base_link" />
+        <origin xyz="0 0 ${base_link_zoff}" rpy="0 0 0" />
     </joint>
 
-
-    <link name="chassis">
+    <link name="base_link">
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <mass value="1.14395" />
@@ -50,7 +49,7 @@
     <link name="imu_link" />
 
     <joint name="imu_joint" type="fixed">
-        <parent link="chassis" />
+        <parent link="base_link" />
         <child link="imu_link" />
         <origin xyz="0 0 ${imu_zoff}" rpy="0 0 0" />
     </joint>
@@ -58,7 +57,7 @@
     <link name="lidar_link" />
 
     <joint name="lidar_joint" type="fixed">
-        <parent link="chassis" />
+        <parent link="base_link" />
         <child link="lidar_link" />
         <origin xyz="0 0 ${lidar_zoff}" rpy="0 0 0" />
     </joint>
@@ -66,9 +65,10 @@
     <gazebo reference="imu_link">
         <sensor name="imu_sensor" type="imu">
             <always_on>1</always_on>
-            <update_rate>1</update_rate>
+            <update_rate>100</update_rate>
             <visualize>true</visualize>
             <topic>/imu</topic>
+            <gz_frame_id>imu_link</gz_frame_id>
         </sensor>
     </gazebo>
 
@@ -76,10 +76,9 @@
         <material>Gazebo/Blue</material>
 
         <sensor name="gpu_lidar" type="gpu_lidar">
+            <gz_frame_id>lidar_link</gz_frame_id>
             <pose>0 0 0 0 0 0</pose>
-            <!-- <topic>lidar</topic> -->
-            <laser_topic>lidar/scan</laser_topic>
-            <point_cloud_topic>lidar/points</point_cloud_topic>
+            <topic>lidar</topic>
             <update_rate>10</update_rate>
             <ray>
                 <scan>
@@ -107,7 +106,6 @@
         </sensor>
     </gazebo>
 
-
     <link name="left_wheel">
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -130,7 +128,7 @@
 
     <joint name="left_wheel_joint" type="continuous">
         <origin xyz="${wheel_xoff} ${wheel_ygap / 2.0} ${wheel_zoff}" rpy="-1.5707 0 0" />
-        <parent link="chassis" />
+        <parent link="base_link" />
         <child link="left_wheel" />
         <axis xyz="0 0 1" />
     </joint>
@@ -138,7 +136,6 @@
     <gazebo reference="left_wheel">
         <material>Gazebo/Red</material>
     </gazebo>
-
 
     <link name="right_wheel">
         <inertial>
@@ -162,7 +159,7 @@
 
     <joint name="right_wheel_joint" type="continuous">
         <origin xyz="${wheel_xoff} ${-wheel_ygap / 2.0} ${wheel_zoff}" rpy="-1.5707 0 0" />
-        <parent link="chassis" />
+        <parent link="base_link" />
         <child link="right_wheel" />
         <axis xyz="0 0 1" />
     </joint>
@@ -170,7 +167,6 @@
     <gazebo reference="right_wheel">
         <material>Gazebo/Red</material>
     </gazebo>
-
 
     <link name="caster">
         <inertial>
@@ -194,9 +190,9 @@
 
     <joint name="caster_wheel" type="continuous">
         <origin xyz="${caster_xoff} 0 ${caster_zoff}" rpy="0 0 0" />
-        <parent link="chassis" />
+        <parent link="base_link" />
         <child link="caster" />
-        <axis xyz="1 1 1" />
+        <axis xyz="0 0 1" />
     </joint>
 
     <gazebo reference="caster">
@@ -204,7 +200,6 @@
         <mu1 value="0.0" />
         <mu2 value="0.0" />
     </gazebo>
-
 
     <gazebo>
         <plugin
@@ -214,12 +209,22 @@
             <right_joint>right_wheel_joint</right_joint>
             <wheel_separation>${wheel_ygap}</wheel_separation>
             <wheel_radius>${wheel_radius}</wheel_radius>
-            <odom_publish_frequency>1</odom_publish_frequency>
+            <odom_publish_frequency>10</odom_publish_frequency>
             <topic>cmd_vel</topic>
 
             <frame_id>odom</frame_id>
             <child_frame_id>base_footprint</child_frame_id>
 
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin
+            filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher">
+            <joint_name>left_wheel_joint</joint_name>
+            <joint_name>right_wheel_joint</joint_name>
+            <joint_name>caster_wheel</joint_name>
         </plugin>
     </gazebo>
 

@@ -1,3 +1,9 @@
+# ROS 2 Launch file for indoor_1 package with Gazebo simulation, Nav2, and ros_gz_bridge
+# Key configurations:
+#   - lidar_scan_topic set to /lidar (matching <topic>lidar</topic> in URDF sensor)
+#   - lidar_points_topic set to /lidar/points
+#   - joint_state topic remapped to /joint_states
+
 import os
 import tempfile
 from ament_index_python.packages import get_package_share_directory
@@ -8,34 +14,32 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 import xacro
 
+
 def generate_launch_description():
     pkg_share = get_package_share_directory('indoor_1')
     xacro_file = os.path.join(pkg_share, 'urdf', 'clown_car.urdf.xacro')
     rviz_config_file = os.path.join(pkg_share, 'config', 'indoor_1.rviz')
     world_file = os.path.join(pkg_share, 'worlds', 'test_world.sdf')
-
-    nav2_params_file = os.path.join(
-        get_package_share_directory('nav2_bringup'),
-        'params',
-        'nav2_params.yaml',
-    )
-    
-    lidar_scan_topic = '/world/test_world/model/clown_car/link/base_footprint/sensor/gpu_lidar/scan'
-    lidar_points_topic = '/world/test_world/model/clown_car/link/base_footprint/sensor/gpu_lidar/scan/points'
-    odom_topic = '/model/clown_car/odometry'
     gazebo_launch = os.path.join(
         get_package_share_directory('ros_gz_sim'),
         'launch',
         'gz_sim.launch.py'
     )
 
+    nav2_params_file = os.path.join(
+        get_package_share_directory('nav2_bringup'),
+        'params',
+        'nav2_params.yaml',
+    )
+
+    # Gz topics — updated to match <topic>lidar</topic> in the URDF sensor
+    lidar_scan_topic = '/lidar'
+    lidar_points_topic = '/lidar/points'
+    odom_topic = '/model/clown_car/odometry'
+    joint_state_topic = '/world/test_world/model/clown_car/joint_state'
+
+    # Robot description
     robot_desc = xacro.process_file(xacro_file).toxml()
-    urdf_temp = tempfile.NamedTemporaryFile(mode='w', suffix='.urdf', delete=False)
-    urdf_temp.write(robot_desc)
-    urdf_temp.flush()
-    urdf_file = urdf_temp.name
-    urdf_temp.close()
-        
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -43,25 +47,11 @@ def generate_launch_description():
         parameters=[{'robot_description': robot_desc}]
     )
 
-    # joint_state_publisher_node = Node(
-    #     package='joint_state_publisher',
-    #     executable='joint_state_publisher',
-    #     name='joint_state_publisher',
-    #     parameters=[{'robot_description': robot_desc}]
-    # )
-
-    # joint_state_publisher_gui_node = Node(
-    #     package='joint_state_publisher_gui',
-    #     executable='joint_state_publisher_gui',
-    #     name='joint_state_publisher_gui'
-    # )
-
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(gazebo_launch),
         launch_arguments={'gz_args': f'-r {world_file}'}.items()
     )
 
-    slam = LaunchConfiguration('slam')
     map_yaml = LaunchConfiguration('map')
     use_sim_time = LaunchConfiguration('use_sim_time')
     params_file = LaunchConfiguration('params_file')
@@ -75,17 +65,22 @@ def generate_launch_description():
             )
         ),
         launch_arguments={
-            'slam': slam,
             'map': map_yaml,
             'use_sim_time': use_sim_time,
             'params_file': params_file,
         }.items(),
     )
 
+    # Workaround: Gazebo requires a .urdf file, not a .xacro
+    urdf_temp = tempfile.NamedTemporaryFile(mode='w', suffix='.urdf', delete=False)
+    urdf_temp.write(robot_desc)
+    urdf_temp.flush()
+    urdf_temp.close()
+
     spawn_robot = Node(
         package='ros_gz_sim',
         executable='create',
-        arguments=['-file', urdf_file, '-name', 'clown_car'],
+        arguments=['-file', urdf_temp.name, '-name', 'clown_car'],
         output='screen'
     )
 
@@ -103,16 +98,20 @@ def generate_launch_description():
         arguments=[
             f'{lidar_scan_topic}@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
             f'{lidar_points_topic}@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
-            '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
             f'{odom_topic}@nav_msgs/msg/Odometry[gz.msgs.Odometry',
-            '/cmd_vel@geometry_msgs/msg/Twist[gz.msgs.Twist',
+            '/model/clown_car/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
+            '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
+            f'{joint_state_topic}@sensor_msgs/msg/JointState[gz.msgs.Model',
         ],
         remappings=[
             (lidar_scan_topic, '/scan'),
             (lidar_points_topic, '/points'),
             (odom_topic, '/odom'),
+            ('/model/clown_car/tf', '/tf'),
+            (joint_state_topic, '/joint_states'),
         ],
-        output='screen'
+        output='screen',
     )
 
     return LaunchDescription([
