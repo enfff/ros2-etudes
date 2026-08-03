@@ -28,3 +28,5 @@ The gazebo simulation provides an empty world and a basic robot, that will be us
 ## Indoor 1: LiDAR, Wheel Odometry, and IMU
 
 Classic 2D SLAM setup, using LiDAR and Odometry and an IMU.
+
+![ClownCar in RViz](media/clown_car-rviz2.png)

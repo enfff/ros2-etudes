@@ -30,3 +30,6 @@ DynamixelSDK
 media/
 *.pdf
 *Harmonic*
+
+*.gv
+*.pdf
