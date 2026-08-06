@@ -30,3 +30,9 @@ The gazebo simulation provides an empty world and a basic robot, that will be us
 Classic 2D SLAM setup, using LiDAR and Odometry and an IMU.
 
 ![ClownCar in RViz](media/clown_car-rviz2.png)
+
+To run the simulation with joystick teleop, execute:
+
+    ros2 launch indoor_1 launch.py use_teleop:=True joy_dev:=0
+
+Where `0` is the ID of your joystick. Check the available ones with `ls /dev/input/js*`.
