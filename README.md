@@ -35,4 +35,6 @@ To run the simulation with joystick teleop, execute:
 
     ros2 launch indoor_1 launch.py use_teleop:=True joy_dev:=0
 
-Where `0` is the ID of your joystick. Check the available ones with `ls /dev/input/js*`.
+Where `0` is the ID of your joystick. Check the available ones with `ls /dev/input/js*`. To try other maps use the flag `maps`.
+
+<!--    ros2 launch indoor_1 launch.py use_teleop:=True joy_dev:=0 map:=/opt/ros/jazzy/share/nav2_minimal_tb4_sim/worlds/warehouse.sdf -->
